@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
 
     FirebaseAuth mAuth;
     OnCompleteListener<AuthResult> mCreateAccountListener;
-    OnCompleteListener<AuthResult> mLoginlistener;
+    OnCompleteListener<AuthResult> mLoginListener;
     DatabaseReference mDataBaseReference;
 
     boolean mIsCreateAccount = false;
@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
         };
 
         //ログイン
-        mLoginlistener = new OnCompleteListener<AuthResult>() {
+        mLoginListener = new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()){
@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
                         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot snapshot) {
-                                Map data = snapshot.getValue(Map.class);
+                                Map data = (Map) snapshot.getValue();
                                 saveName((String)data.get("name"));
                             }
                             @Override
@@ -170,7 +170,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login(String email, String password){
         mProgress.show();
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(mLoginlistener);
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(mLoginListener);
     }
 
     private void saveName(String name){

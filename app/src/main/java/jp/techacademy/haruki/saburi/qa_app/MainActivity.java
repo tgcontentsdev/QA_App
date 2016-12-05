@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private int mGenre = 0;
 
-    private DatabaseReference mDatebasereference;
+    private DatabaseReference mDatabaseReference;
     private DatabaseReference mGenreRef;
     private ListView mListView;
     private ArrayList<Question> mQuestionArrayList;
@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -184,14 +184,14 @@ public class MainActivity extends AppCompatActivity {
                 if (mGenreRef != null){
                     mGenreRef.removeEventListener(mEventListener);
                 }
-                mGenreRef = mDatebasereference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+                mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
                 mGenreRef.addChildEventListener(mEventListener);
 
                 return true;
             }
         });
 
-        mDatebasereference = FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         mListView = (ListView) findViewById(R.id.listView);
         mAdapter = new QuestionsListAdapter(this);
