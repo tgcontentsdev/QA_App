@@ -114,6 +114,7 @@ public class QuestionSendActivity extends AppCompatActivity implements View.OnCl
             data.put("body", body);
             data.put("name", name);
 
+
             BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
 
             if (drawable != null){
@@ -124,6 +125,10 @@ public class QuestionSendActivity extends AppCompatActivity implements View.OnCl
 
                 data.put("image", bitmapString);
             }
+
+            Map<String, Boolean> dataF = new HashMap<String, Boolean>();
+
+            dataF.put("favorite",false);
 
             genreRef.push().setValue(data, this);
             mProgress.show();

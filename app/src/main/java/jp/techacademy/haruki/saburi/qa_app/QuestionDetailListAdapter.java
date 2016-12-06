@@ -60,7 +60,7 @@ public class QuestionDetailListAdapter extends BaseAdapter {
 
         if (getItemViewType(position) == TYPE_QUESTION){
             if (convertView == null){
-                convertView = mLayoutInflater.inflate(R.layout.activity_question_detail, parent, false);
+                convertView = mLayoutInflater.inflate(R.layout.list_question_detail, parent, false);
             }
             String body = mQuestion.getBody();
             String name = mQuestion.getName();

@@ -2,10 +2,14 @@ package jp.techacademy.haruki.saburi.qa_app;
 
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,6 +26,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
     private ListView mListView;
     private Question mQuestion;
     private QuestionDetailListAdapter mAdapter;
+    private Boolean mFavorite;
 
     private DatabaseReference mAnswerRef;
 
@@ -32,8 +37,8 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
             String answerUid = dataSnapshot.getKey();
 
-            for (Answer answer : mQuestion.getAnswers()){
-                if (answerUid.equals(answer.getAnswerUid())){
+            for (Answer answer : mQuestion.getAnswers()) {
+                if (answerUid.equals(answer.getAnswerUid())) {
                     return;
                 }
             }
@@ -76,7 +81,17 @@ public class QuestionDetailActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         mQuestion = (Question) extras.get("question");
 
-        setTitle(mQuestion.getTitle());
+        if (savedInstanceState == null) {
+            View customActionBar = this.getActionBarView(mQuestion.getTitle(), false);
+            ActionBar actionBar = this.getSupportActionBar();
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowHomeEnabled(false);
+            actionBar.setCustomView(customActionBar);
+            actionBar.setDisplayShowCustomEnabled(true);
+        }
+
+        // setTitle(mQuestion.getTitle());
 
         mListView = (ListView) findViewById(R.id.listView);
         mAdapter = new QuestionDetailListAdapter(this, mQuestion);
@@ -89,10 +104,10 @@ public class QuestionDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-                if (user == null){
+                if (user == null) {
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(intent);
-                }else {
+                } else {
                     Intent intent = new Intent(getApplicationContext(), AnswerSendActivity.class);
                     intent.putExtra("question", mQuestion);
                     startActivity(intent);
@@ -104,4 +119,36 @@ public class QuestionDetailActivity extends AppCompatActivity {
         mAnswerRef = databaseReference.child(Const.ContentsPATH).child(String.valueOf(mQuestion.getGenre())).child(mQuestion.getQuestionUid()).child(Const.AnswersPATH);
         mAnswerRef.addChildEventListener(mEventListener);
     }
+
+    private View getActionBarView(String title, final Boolean favorite) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.custom_action_bar, null);
+
+        TextView textView = (TextView) view.findViewById(R.id.titleTextView);
+        textView.setText(title);
+
+        final Button button = (Button) view.findViewById(R.id.favoriteButton);
+        if (favorite) {
+            button.setBackgroundResource(R.drawable.star);
+        } else {
+            button.setBackgroundResource(R.drawable.dark_star);
+        }
+        mFavorite = favorite;
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mFavorite) {
+                    mFavorite = false;
+                    button.setBackgroundResource(R.drawable.dark_star);
+                } else {
+                    mFavorite = true;
+                    button.setBackgroundResource(R.drawable.star);
+                }
+            }
+        });
+        return view;
+    }
+
 }
+
