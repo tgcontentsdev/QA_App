@@ -167,11 +167,11 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed(){
-        super.onBackPressed();
+
         Intent intent = new Intent();
         intent.putExtra("genre",mGenre);
         setResult(RESULT_OK, intent);
-        finish();
+        super.onBackPressed();
     }
 
 }
