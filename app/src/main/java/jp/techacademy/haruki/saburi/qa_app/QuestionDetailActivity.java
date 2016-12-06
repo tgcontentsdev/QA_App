@@ -1,6 +1,8 @@
 package jp.techacademy.haruki.saburi.qa_app;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +20,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class QuestionDetailActivity extends AppCompatActivity {
@@ -27,6 +31,9 @@ public class QuestionDetailActivity extends AppCompatActivity {
     private Question mQuestion;
     private QuestionDetailListAdapter mAdapter;
     private Boolean mFavorite;
+    private String titleText;
+    private int mGenre;
+    private ArrayList<String> mFavoriteArray = new ArrayList<String>();
 
     private DatabaseReference mAnswerRef;
 
@@ -80,9 +87,12 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         mQuestion = (Question) extras.get("question");
+        titleText = mQuestion.getTitle();
+        mFavorite = (Boolean) extras.get("favoriteBool");
+        mGenre = (int) extras.get("genre");
 
         if (savedInstanceState == null) {
-            View customActionBar = this.getActionBarView(mQuestion.getTitle(), false);
+            View customActionBar = this.getActionBarView(titleText, mFavorite);
             ActionBar actionBar = this.getSupportActionBar();
             actionBar.setDisplayHomeAsUpEnabled(false);
             actionBar.setDisplayShowTitleEnabled(false);
@@ -90,8 +100,6 @@ public class QuestionDetailActivity extends AppCompatActivity {
             actionBar.setCustomView(customActionBar);
             actionBar.setDisplayShowCustomEnabled(true);
         }
-
-        // setTitle(mQuestion.getTitle());
 
         mListView = (ListView) findViewById(R.id.listView);
         mAdapter = new QuestionDetailListAdapter(this, mQuestion);
@@ -141,13 +149,29 @@ public class QuestionDetailActivity extends AppCompatActivity {
                 if (mFavorite) {
                     mFavorite = false;
                     button.setBackgroundResource(R.drawable.dark_star);
+                    mFavoriteArray.remove(titleText);
                 } else {
                     mFavorite = true;
                     button.setBackgroundResource(R.drawable.star);
+                    mFavoriteArray.add(titleText);
                 }
+                Gson gson = new Gson();
+                SharedPreferences sharedPreferences = getSharedPreferences("favorite", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("favorite",gson.toJson(mFavoriteArray));
+                editor.apply();
             }
         });
         return view;
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        Intent intent = new Intent();
+        intent.putExtra("genre",mGenre);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 
 }

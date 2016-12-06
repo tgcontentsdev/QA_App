@@ -1,6 +1,8 @@
 package jp.techacademy.haruki.saburi.qa_app;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -26,9 +28,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference mGenreRef;
     private ListView mListView;
     private ArrayList<Question> mQuestionArrayList;
+    private ArrayList<Question> mSubQuestionArrayList;
     private QuestionsListAdapter mAdapter;
-    private ArrayList<String> mFavoriteArray;
+    private ArrayList<String> mFavoriteArray = new ArrayList<String>();
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -53,16 +59,16 @@ public class MainActivity extends AppCompatActivity {
             String imageString = (String) map.get("image");
             Bitmap image = null;
             byte[] bytes;
-            if (imageString != null){
+            if (imageString != null) {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 bytes = Base64.decode(imageString, Base64.DEFAULT);
-            }else {
+            } else {
                 bytes = new byte[0];
             }
 
             ArrayList<Answer> answerArrayList = new ArrayList<Answer>();
             HashMap answerMap = (HashMap) map.get("answers");
-            if (answerMap != null){
+            if (answerMap != null) {
                 for (Object key : answerMap.keySet()) {
                     HashMap temp = (HashMap) answerMap.get((String) key);
                     String answerBody = (String) temp.get("body");
@@ -74,20 +80,31 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
-            mQuestionArrayList.add(question);
+            if (mGenre == 5) {
+
+                if (mFavoriteArray != null) {
+                    if (!mFavoriteArray.isEmpty() && mFavoriteArray.contains(title)) {
+                        mQuestionArrayList.add(question);
+                    }
+                }
+            } else {
+                mQuestionArrayList.add(question);
+            }
+            mSubQuestionArrayList.add(question);
             mAdapter.notifyDataSetChanged();
+
         }
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             HashMap map = (HashMap) dataSnapshot.getValue();
 
-            for (Question question: mQuestionArrayList){
-                if (dataSnapshot.getKey().equals(question.getQuestionUid())){
+            for (Question question : mQuestionArrayList) {
+                if (dataSnapshot.getKey().equals(question.getQuestionUid())) {
                     question.getAnswers().clear();
                     HashMap answerMap = (HashMap) map.get("answers");
-                    if (answerMap != null){
-                        for (Object key: answerMap.keySet()) {
+                    if (answerMap != null) {
+                        for (Object key : answerMap.keySet()) {
                             HashMap temp = (HashMap) answerMap.get((String) key);
                             String answerBody = (String) temp.get("body");
                             String answerName = (String) temp.get("name");
@@ -133,16 +150,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (mGenre == 0){
+                if (mGenre == 0) {
                     Snackbar.make(view, "ジャンルを選択してください", Snackbar.LENGTH_LONG).show();
                     return;
                 }
 
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                if (user == null){
+                if (user == null) {
                     Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(intent);
-                }else {
+                } else {
                     Intent intent = new Intent(getApplicationContext(), QuestionSendActivity.class);
                     intent.putExtra("genre", mGenre);
                     startActivity(intent);
@@ -173,9 +190,10 @@ public class MainActivity extends AppCompatActivity {
                 } else if (id == R.id.nav_computer) {
                     mToolbar.setTitle("コンピューター");
                     mGenre = 4;
-                } else if (id == R.id.nav_favorite){
+                } else if (id == R.id.nav_favorite) {
                     mToolbar.setTitle("お気に入り");
                     mGenre = 5;
+                    getFavorite();
                 }
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -185,15 +203,15 @@ public class MainActivity extends AppCompatActivity {
                 mAdapter.setQuestionArrayList(mQuestionArrayList);
                 mListView.setAdapter(mAdapter);
 
-               if (mGenreRef != null){
+                if (mGenreRef != null) {
                     mGenreRef.removeEventListener(mEventListener);
                 }
 
                 if (mGenre != 5) {
                     mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
                     mGenreRef.addChildEventListener(mEventListener);
-                }else {
-                    for (int i = 1; i < 5; i++){
+                } else {
+                    for (int i = 1; i < 5; i++) {
                         mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(i));
                         mGenreRef.addChildEventListener(mEventListener);
                     }
@@ -208,8 +226,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.listView);
         mAdapter = new QuestionsListAdapter(this);
         mQuestionArrayList = new ArrayList<Question>();
+        mSubQuestionArrayList = new ArrayList<Question>();
         mAdapter.notifyDataSetChanged();
-
 
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -217,9 +235,19 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), QuestionDetailActivity.class);
                 intent.putExtra("question", mQuestionArrayList.get(position));
-                startActivity(intent);
+                if (mGenre == 5 || mFavoriteArray.contains(mQuestionArrayList.get(position).getTitle())) {
+                    intent.putExtra("favoriteBool", true);
+                } else {
+                    intent.putExtra("favoriteBool", false);
+                }
+                intent.putExtra("genre",mGenre);
+                int requestCode = 100;
+                startActivityForResult(intent, requestCode);
+               // startActivity(intent);
             }
         });
+
+        getFavorite();
 
     }
 
@@ -241,4 +269,31 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void getFavorite() {
+        Gson gson = new Gson();
+        SharedPreferences sharedPreferences = getSharedPreferences("favorite", Context.MODE_PRIVATE);
+        mFavoriteArray = gson.fromJson(sharedPreferences.getString("favorite", null), new TypeToken<List>() {
+        }.getType());
+    }
+
+   protected void onActivityResult(int requestCode, int resultCode, Intent intent){
+       super.onActivityResult(requestCode, resultCode, intent);
+
+       if (requestCode == 100){
+           int i = intent.getIntExtra("genre",0);
+           if (i == 5){
+               getFavorite();
+               mQuestionArrayList.clear();
+               mAdapter.setQuestionArrayList(mQuestionArrayList);
+               mListView.setAdapter(mAdapter);
+               for (Question question : mSubQuestionArrayList){
+                   if (mFavoriteArray.contains(question.getTitle())){
+                       mQuestionArrayList.add(question);
+                   }
+               }
+               mAdapter.notifyDataSetChanged();
+           }
+       }
+   }
 }
