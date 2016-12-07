@@ -3,14 +3,16 @@ package jp.techacademy.haruki.saburi.qa_app;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -89,6 +91,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
         mQuestion = (Question) extras.get("question");
         titleText = mQuestion.getTitle();
         mFavorite = (Boolean) extras.get("favoriteBool");
+        mFavoriteArray = extras.getStringArrayList("favoriteArray");
         mGenre = (int) extras.get("genre");
 
         if (savedInstanceState == null) {
@@ -146,14 +149,17 @@ public class QuestionDetailActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                RelativeLayout layout = (RelativeLayout) findViewById(R.id.activity_question_detail);
                 if (mFavorite) {
                     mFavorite = false;
                     button.setBackgroundResource(R.drawable.dark_star);
                     mFavoriteArray.remove(titleText);
+                    Snackbar.make(layout, "お気に入りを解除しました", Snackbar.LENGTH_SHORT).show();
                 } else {
                     mFavorite = true;
                     button.setBackgroundResource(R.drawable.star);
                     mFavoriteArray.add(titleText);
+                    Snackbar.make(layout, "お気に入りに追加しました", Snackbar.LENGTH_SHORT).show();
                 }
                 Gson gson = new Gson();
                 SharedPreferences sharedPreferences = getSharedPreferences("favorite", Context.MODE_PRIVATE);

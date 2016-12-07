@@ -215,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
                         mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(i));
                         mGenreRef.addChildEventListener(mEventListener);
                     }
+                    mSubQuestionArrayList.clear();
                 }
 
                 return true;
@@ -241,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("favoriteBool", false);
                 }
                 intent.putExtra("genre",mGenre);
+                intent.putStringArrayListExtra("favoriteArray",mFavoriteArray);
                 int requestCode = 100;
                 startActivityForResult(intent, requestCode);
                // startActivity(intent);
