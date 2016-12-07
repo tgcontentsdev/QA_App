@@ -236,41 +236,47 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent(getApplicationContext(), QuestionDetailActivity.class);
                 intent.putExtra("question", mQuestionArrayList.get(position));
-                if (mGenre == 5 || mFavoriteArray.contains(mQuestionArrayList.get(position).getTitle())) {
-                    intent.putExtra("favoriteBool", true);
-                } else {
+                if (mGenre == 5 || mFavoriteArray != null) {
+                    if (mFavoriteArray.contains(mQuestionArrayList.get(position).getTitle())) {
+                        intent.putExtra("favoriteBool", true);
+                    } else {
+                        intent.putExtra("favoriteBool", false);
+                    }
+                }else {
                     intent.putExtra("favoriteBool", false);
                 }
-                intent.putExtra("genre",mGenre);
-                intent.putStringArrayListExtra("favoriteArray",mFavoriteArray);
-                int requestCode = 100;
-                startActivityForResult(intent, requestCode);
-               // startActivity(intent);
+                    intent.putExtra("genre", mGenre);
+                    intent.putStringArrayListExtra("favoriteArray", mFavoriteArray);
+                    int requestCode = 100;
+                    startActivityForResult(intent, requestCode);
+                    // startActivity(intent);
+                }
             }
-        });
 
-        getFavorite();
+            );
 
-    }
+            getFavorite();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+        }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(getApplicationContext(), SettingActivity.class);
-            startActivity(intent);
+        @Override
+        public boolean onCreateOptionsMenu (Menu menu){
+            getMenuInflater().inflate(R.menu.menu_main, menu);
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
-    }
+        @Override
+        public boolean onOptionsItemSelected (MenuItem item){
+            int id = item.getItemId();
+
+            if (id == R.id.action_settings) {
+                Intent intent = new Intent(getApplicationContext(), SettingActivity.class);
+                startActivity(intent);
+                return true;
+            }
+
+            return super.onOptionsItemSelected(item);
+        }
 
     public void getFavorite() {
         Gson gson = new Gson();
@@ -279,23 +285,23 @@ public class MainActivity extends AppCompatActivity {
         }.getType());
     }
 
-   protected void onActivityResult(int requestCode, int resultCode, Intent intent){
-       super.onActivityResult(requestCode, resultCode, intent);
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
 
-       if (requestCode == 100){
-           int i = intent.getIntExtra("genre",0);
-           if (i == 5){
-               getFavorite();
-               mQuestionArrayList.clear();
-               mAdapter.setQuestionArrayList(mQuestionArrayList);
-               mListView.setAdapter(mAdapter);
-               for (Question question : mSubQuestionArrayList){
-                   if (mFavoriteArray.contains(question.getTitle())){
-                       mQuestionArrayList.add(question);
-                   }
-               }
-               mAdapter.notifyDataSetChanged();
-           }
-       }
-   }
+        if (requestCode == 100) {
+            int i = intent.getIntExtra("genre", 0);
+            if (i == 5) {
+                getFavorite();
+                mQuestionArrayList.clear();
+                mAdapter.setQuestionArrayList(mQuestionArrayList);
+                mListView.setAdapter(mAdapter);
+                for (Question question : mSubQuestionArrayList) {
+                    if (mFavoriteArray.contains(question.getTitle())) {
+                        mQuestionArrayList.add(question);
+                    }
+                }
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+    }
 }

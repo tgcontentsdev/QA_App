@@ -32,7 +32,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
     private ListView mListView;
     private Question mQuestion;
     private QuestionDetailListAdapter mAdapter;
-    private Boolean mFavorite;
+    private Boolean mFavorite = false;
     private String titleText;
     private int mGenre;
     private ArrayList<String> mFavoriteArray = new ArrayList<String>();
@@ -93,6 +93,10 @@ public class QuestionDetailActivity extends AppCompatActivity {
         mFavorite = (Boolean) extras.get("favoriteBool");
         mFavoriteArray = extras.getStringArrayList("favoriteArray");
         mGenre = (int) extras.get("genre");
+
+        if (mFavoriteArray == null){
+            mFavoriteArray = new ArrayList<String>();
+        }
 
         if (savedInstanceState == null) {
             View customActionBar = this.getActionBarView(titleText, mFavorite);
