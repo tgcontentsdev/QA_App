@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -177,7 +177,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
                 int id = menuItem.getItemId();
-
+                fab.setVisibility(View.VISIBLE);
+                fab.setEnabled(true);
                 if (id == R.id.nav_hobby) {
                     mToolbar.setTitle("趣味");
                     mGenre = 1;
@@ -194,6 +195,8 @@ public class MainActivity extends AppCompatActivity {
                     mToolbar.setTitle("お気に入り");
                     mGenre = 5;
                     getFavorite();
+                    fab.setVisibility(View.INVISIBLE);
+                    fab.setEnabled(false);
                 }
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -288,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
-        if (requestCode == 100) {
+        if (requestCode == 100 && resultCode == RESULT_OK) {
             int i = intent.getIntExtra("genre", 0);
             if (i == 5) {
                 getFavorite();
